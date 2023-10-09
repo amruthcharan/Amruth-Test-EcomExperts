@@ -76,7 +76,21 @@
             </thead>
 
             <tbody>
+
               {%- for item in cart.items -%}
+              {% comment %}
+              Identifying the free product and it's sale product
+              {% endcomment %}
+              {% assign freeproduct = false %}
+              {% if item.product.tags contains 'free-product' %}
+                {% assign freeproduct = true %}
+              {% endif %}
+                {% assign hasFreeproduct = false %}
+              {% if item.variant.metafields.custom.free_product %}
+                {% assign freeproductId = item.variant.metafields.custom.free_product | split: '/' | last %}
+                {% assign hasFreeproduct = true %}
+              {% endif %}
+
                 <tr class="cart-item" id="CartItem-{{ item.index | plus: 1 }}">
                   <td class="cart-item__media">
                     {% if item.image %}
@@ -235,6 +249,12 @@
                     endif
                   -%}
                   <td class="cart-item__quantity{% if has_qty_rules or has_vol_pricing %} cart-item__quantity--info{% endif %}">
+                    {% comment %}
+                    hiding controls to the free product
+                    {% endcomment %}
+                    {% if freeproduct %}
+                      <div class="free-product">Free Product</div>
+                    {% else %}
                     <quantity-popover>
                       <div class="cart-item__quantity-wrapper quantity-popover-wrapper">
                         <label class="visually-hidden" for="Quantity-{{ item.index | plus: 1 }}">
@@ -286,6 +306,12 @@
                         <cart-remove-button
                           id="Remove-{{ item.index | plus: 1 }}"
                           data-index="{{ item.index | plus: 1 }}"
+                          {% comment %}
+                          Added free product variant id to auto remove when the sale item removed
+                          {% endcomment %}
+                          {% if hasFreeproduct %}
+                          data-freeItem="{{freeproductId}}"
+                          {% endif %}
                         >
                           <a
                             href="{{ item.url_to_remove }}"
@@ -394,6 +420,7 @@
                         </svg>
                       </div>
                     </quantity-popover>
+                    {% endif %}
                   </td>
 
                   <td class="cart-item__totals right small-hide">

@@ -973,7 +973,8 @@ class VariantSelects extends HTMLElement {
       this.updateMedia();
       this.updateURL();
       this.updateVariantInput();
-      this.renderProductInfo();
+      // added new argument to toggleAddButton to disable the button when the variant is Unselected
+      this.renderProductInfo(this.options[this.options.length - 1] === 'Unselected');
       this.updateShareUrl();
     }
   }
@@ -1075,7 +1076,7 @@ class VariantSelects extends HTMLElement {
     if (productForm) productForm.handleErrorMessage();
   }
 
-  renderProductInfo() {
+  renderProductInfo(forceDisable = false) {
     const requestedVariantId = this.currentVariant.id;
     const sectionId = this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section;
 
@@ -1110,6 +1111,10 @@ class VariantSelects extends HTMLElement {
         const pricePerItemSource = html.getElementById(`Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
 
         const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
+        // check and update free product variant id
+        const freeProduct = html.querySelector('input[name="free-product"]');
+        const freeProductInput = document.querySelector('input[name="free-product"]');
+        if (freeProductInput) freeProductInput.value = freeProduct?.value || "";
 
         if (source && destination) destination.innerHTML = source.innerHTML;
         if (inventorySource && inventoryDestination) inventoryDestination.innerHTML = inventorySource.innerHTML;
@@ -1136,8 +1141,9 @@ class VariantSelects extends HTMLElement {
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
         this.toggleAddButton(
-          addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
-          window.variantStrings.soldOut
+          // added new argument to toggleAddButton to disable the button when the variant is Unselected
+          forceDisable ? true : addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
+          forceDisable ? 'Please Select Size' : window.variantStrings.soldOut
         );
 
         publish(PUB_SUB_EVENTS.variantChange, {
@@ -1209,10 +1215,15 @@ class VariantRadios extends VariantSelects {
   }
 
   updateOptions() {
-    const fieldsets = Array.from(this.querySelectorAll('fieldset'));
+    // updated the logic to support both radio and select
+    const fieldsets = Array.from(document.querySelectorAll('fieldset'));
     this.options = fieldsets.map((fieldset) => {
       return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
     });
+    var option = Array.from(document.querySelectorAll('select')).find((select) => select.selectedOptions.length);
+    if (option) {
+      this.options.push(option.selectedOptions[0].value);
+    }
   }
 }
 
@@ -1257,3 +1268,17 @@ class ProductRecommendations extends HTMLElement {
 }
 
 customElements.define('product-recommendations', ProductRecommendations);
+
+// added event listener to disable add to cart button on page load and set the size to Unselected
+document.addEventListener('DOMContentLoaded', () => {
+  // removing the default selected option from the size dropdown
+    const sizeselect = document.querySelector('select[name="options[Size]"]');
+    if (sizeselect) {
+      setTimeout(() => {
+        sizeselect.selectedIndex = 0;
+        // disable add to cart button on page load
+        document.querySelector('[name="add"]').setAttribute('disabled', 'disabled');
+        document.querySelector('[name="add"] > span').textContent = "Please Select Size";
+      }, 500);
+    }
+});

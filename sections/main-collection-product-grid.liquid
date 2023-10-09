@@ -155,6 +155,12 @@
               "
             >
               {%- for product in collection.products -%}
+              {% comment %}
+              Hiding the offer items
+              {% endcomment %}
+              {% if product.tags contains 'free-product' %}
+                {% continue %}
+              {% endif %}
                 {% assign lazy_load = false %}
                 {%- if forloop.index > 2 -%}
                   {%- assign lazy_load = true -%}
