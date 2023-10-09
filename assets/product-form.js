@@ -92,6 +92,43 @@ if (!customElements.get('product-form')) {
             if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
             if (!this.error) this.submitButton.removeAttribute('aria-disabled');
             this.querySelector('.loading-overlay__spinner').classList.add('hidden');
+
+            // checking if the free product is enabled for the selected variant
+            const freeProduct = this.form.querySelector('[name="free-product"]');
+            if (freeProduct && freeProduct.value != "") this.CheckFreeProduct(freeProduct.value);
+          });
+      }
+
+      // Adding the free product to the cart
+      CheckFreeProduct(freeProductId) {
+        fetch(`${routes.cart_url}.js`)
+          .then((response) => response.json())
+          .then((cart) => {
+            // checking if the free product is already in the cart
+            const freeProduct = cart.items.find((item) => item.variant_id == freeProductId);
+            if (!freeProduct) {
+              // Add free product to cart
+              let formData = {
+                'items': [{
+                 'id': freeProductId,
+                 'quantity': 1
+                 }]
+               };
+              fetch(`${routes.cart_add_url}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+              })
+              .then((response) => response.json())
+              .then((response) => {
+                console.log(response);
+              })
+              .catch((e) => {
+                console.error(e);
+              });
+            }
           });
       }
 

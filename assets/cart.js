@@ -5,7 +5,8 @@ class CartRemoveButton extends HTMLElement {
     this.addEventListener('click', (event) => {
       event.preventDefault();
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
-      cartItems.updateQuantity(this.dataset.index, 0);
+      // added new parameter to remove free item
+      cartItems.updateQuantity(this.dataset.index, 0, "", "", this.dataset.freeitem);
     });
   }
 }
@@ -103,12 +104,14 @@ class CartItems extends HTMLElement {
     ];
   }
 
-  updateQuantity(line, quantity, name, variantId) {
+  updateQuantity(line, quantity, name, variantId, freeItem) {
     this.enableLoading(line);
 
+    // updated pattern to update item quantity by variant id
     const body = JSON.stringify({
-      line,
-      quantity,
+      line: line,
+      quantity: quantity,
+      id: variantId,
       sections: this.getSectionsToRender().map((section) => section.section),
       sections_url: window.location.pathname,
     });
@@ -176,6 +179,8 @@ class CartItems extends HTMLElement {
       })
       .finally(() => {
         this.disableLoading(line);
+        // check if free item is present and remove it
+        if (freeItem && freeItem != "") this.updateQuantity("", 0, "", freeItem, "");
       });
   }
 

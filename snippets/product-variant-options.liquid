@@ -5,13 +5,15 @@
   - product: {Object} product object.
   - option: {Object} current product_option object.
   - block: {Object} block object.
+  - picker_type: String picker type
 
 
   Usage:
   {% render 'product-variant-options',
     product: product,
     option: option,
-    block: block
+    block: block,
+    picker_type: picker_type
   %}
 {% endcomment %}
 {%- liquid
@@ -19,6 +21,7 @@
   assign variants_option1_arr = product.variants | map: 'option1'
   assign variants_option2_arr = product.variants | map: 'option2'
   assign variants_option3_arr = product.variants | map: 'option3'
+  assign variant_images = product.variants | map:'featured_media' | uniq
 
   assign product_form_id = 'product-form-' | append: section.id
 -%}
@@ -26,7 +29,7 @@
 {%- for value in option.values -%}
   {%- liquid
     assign option_disabled = true
-
+    assign variant_image=variant_images[forloop.index0]
     for option1_name in variants_option1_arr
       case option.position
         when 1
@@ -45,7 +48,7 @@
     endfor
   -%}
 
-  {%- if block.settings.picker_type == 'button' -%}
+  {%- if picker_type == 'button' -%}
     <input
       type="radio"
       id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
@@ -63,7 +66,24 @@
       {{ value -}}
       <span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>
     </label>
-  {%- elsif block.settings.picker_type == 'dropdown' -%}
+  {%- elsif picker_type == 'swatch' -%}
+    <input
+      type="radio"
+      id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+      name="{{ option.name }}"
+      value="{{ value | escape }}"
+      form="{{ product_form_id }}"
+      {% if option.selected_value == value %}
+        checked
+      {% endif %}
+      {% if option_disabled %}
+        class="disabled"
+      {% endif %}
+    >
+    <label class="label-swatch" for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" style="background-image: url('https:{{ variant_image | image_url: width: 40 }}');">
+      <span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>
+    </label>
+  {%- else -%}
     <option
       value="{{ value | escape }}"
       {% if option.selected_value == value %}

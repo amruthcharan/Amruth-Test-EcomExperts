@@ -211,6 +211,14 @@ fieldset.product-form__input .form__label {
   position: relative;
 }
 
+/* Added background image properties for swatch */
+.product-form__input input[type='radio'] + label.label-swatch {
+  height: 60px;
+  width: 60px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
 .product-form__input input[type='radio'] + label:before {
   content: '';
   position: absolute;
@@ -231,6 +239,12 @@ fieldset.product-form__input .form__label {
 .product-form__input input[type='radio']:checked + label {
   background-color: rgb(var(--color-foreground));
   color: rgb(var(--color-background));
+}
+
+/* Removed background color and added think border for selected variant */
+.product-form__input input[type='radio']:checked + label.label-swatch {
+  background-color: unset;
+  border: solid 2px rgb(var(--color-foreground));
 }
 
 .product-form__input input[type='radio']:not(.disabled) + label > .visually-hidden {
