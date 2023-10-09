@@ -1272,11 +1272,13 @@ customElements.define('product-recommendations', ProductRecommendations);
 // added event listener to disable add to cart button on page load and set the size to Unselected
 document.addEventListener('DOMContentLoaded', () => {
   // removing the default selected option from the size dropdown
-    const sizeselect = document.querySelector('select[name="options[Size]"]')
+    const sizeselect = document.querySelector('select[name="options[Size]"]');
     if (sizeselect) {
-      sizeselect.selectedIndex = 0;
-      // disable add to cart button on page load
-      document.querySelector('[name="add"]').setAttribute('disabled', 'disabled');
-      document.querySelector('[name="add"] > span').textContent = "Please Select Size";
+      setTimeout(() => {
+        sizeselect.selectedIndex = 0;
+        // disable add to cart button on page load
+        document.querySelector('[name="add"]').setAttribute('disabled', 'disabled');
+        document.querySelector('[name="add"] > span').textContent = "Please Select Size";
+      }, 500);
     }
 });
